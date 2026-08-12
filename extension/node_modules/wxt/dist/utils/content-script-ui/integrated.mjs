@@ -1,0 +1,36 @@
+import { applyPosition, createMountFunctions, mountUi } from "./shared.mjs";
+//#region src/utils/content-script-ui/integrated.ts
+/**
+* Create a content script UI without any isolation.
+*
+* @see https://wxt.dev/guide/essentials/content-scripts.html#integrated
+*/
+function createIntegratedUi(ctx, options) {
+	const wrapper = document.createElement(options.tag || "div");
+	let mounted;
+	const mount = () => {
+		applyPosition(wrapper, void 0, options);
+		mountUi(wrapper, options);
+		mounted = options.onMount?.(wrapper);
+	};
+	const remove = () => {
+		options.onRemove?.(mounted);
+		wrapper.replaceChildren();
+		wrapper.remove();
+		mounted = void 0;
+	};
+	const mountFunctions = createMountFunctions({
+		mount,
+		remove
+	}, options);
+	ctx.onInvalidated(remove);
+	return {
+		get mounted() {
+			return mounted;
+		},
+		wrapper,
+		...mountFunctions
+	};
+}
+//#endregion
+export { createIntegratedUi };

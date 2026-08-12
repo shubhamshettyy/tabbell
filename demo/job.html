@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Acme Corp — Senior Engineer (Job #4521)</title>
+    <style>
+      body {
+        font: 16px/1.6 system-ui, sans-serif;
+        max-width: 640px;
+        margin: 48px auto;
+        padding: 0 24px;
+        color: #1a1a2e;
+      }
+      h1 { font-size: 26px; }
+      .meta { color: #666; font-size: 14px; margin-bottom: 24px; }
+      #apply-btn {
+        display: none;
+        padding: 12px 32px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        background: #2563eb;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      #apply-note { color: #b45309; font-size: 14px; }
+      .controls { margin-top: 48px; padding-top: 16px; border-top: 1px dashed #ccc; font-size: 13px; color: #888; }
+    </style>
+  </head>
+  <body>
+    <h1>Senior Software Engineer</h1>
+    <p class="meta">Acme Corp &middot; Remote &middot; Posted today</p>
+    <p>
+      We are looking for a senior engineer to join our platform team. You will design,
+      build, and operate services used by millions of users.
+    </p>
+
+    <p id="apply-note">Applications open soon &mdash; check back later.</p>
+    <button id="apply-btn">Apply now</button>
+
+    <div class="controls">
+      Demo: the Apply button appears automatically after 30 seconds
+      (<a href="#" id="show-now">show it now</a>). Snip the area around
+      &ldquo;Applications open soon&rdquo; with TabBell and choose
+      <em>Element appears</em> with text &ldquo;Apply&rdquo;.
+    </div>
+
+    <script>
+      function showApply() {
+        document.getElementById('apply-note').remove();
+        document.getElementById('apply-btn').style.display = 'inline-block';
+      }
+      setTimeout(showApply, 30000);
+      document.getElementById('show-now').addEventListener('click', function (e) {
+        e.preventDefault();
+        showApply();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MegaShop — Wireless Headphones XL-900</title>
+    <style>
+      body {
+        font: 16px/1.6 system-ui, sans-serif;
+        max-width: 640px;
+        margin: 48px auto;
+        padding: 0 24px;
+        color: #1a1a2e;
+      }
+      h1 { font-size: 24px; }
+      .price-box { margin: 24px 0; padding: 20px; border: 1px solid #e5e5e5; border-radius: 12px; }
+      #price { font-size: 32px; font-weight: 800; color: #b12704; }
+      .was { color: #888; text-decoration: line-through; margin-left: 10px; font-size: 18px; }
+      .controls { margin-top: 48px; padding-top: 16px; border-top: 1px dashed #ccc; font-size: 13px; color: #888; }
+      button { padding: 6px 14px; border-radius: 6px; border: 1px solid #ccc; background: #fafafa; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <h1>Wireless Headphones XL-900</h1>
+    <p>Industry-leading noise cancellation, 40-hour battery life.</p>
+
+    <div class="price-box">
+      <span id="price">$149.99</span>
+      <span class="was">$199.99</span>
+      <p>In stock. Ships tomorrow.</p>
+    </div>
+
+    <div class="controls">
+      Demo: the price drops by $10 every 20 seconds (until $99.99), or
+      <button id="drop-now">drop it now</button>. Snip the price with TabBell and set
+      a threshold, e.g. <em>drops below 120</em>.
+    </div>
+
+    <script>
+      var current = 149.99;
+      function drop() {
+        if (current <= 99.99) return;
+        current = Math.round((current - 10) * 100) / 100;
+        document.getElementById('price').textContent = '$' + current.toFixed(2);
+      }
+      setInterval(drop, 20000);
+      document.getElementById('drop-now').addEventListener('click', drop);
+    </script>
+  </body>
+</html>

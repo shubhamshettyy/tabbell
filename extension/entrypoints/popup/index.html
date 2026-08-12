@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TabBell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="brand">
+        <span class="brand-bell">&#128276;</span>
+        <div>
+          <h1>TabBell</h1>
+          <p class="tagline">Snip it. Close it. Get pinged.</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="actions">
+      <button id="watch-title" class="btn btn-secondary">
+        <span class="btn-icon">&#128065;</span> Watch this tab
+      </button>
+      <button id="snip-area" class="btn btn-primary">
+        <span class="btn-icon">&#9986;&#65039;</span> Snip area&hellip;
+      </button>
+    </section>
+
+    <div id="perm-warning" class="warning" hidden>
+      &#9888;&#65039; Chrome notifications are blocked. Enable notifications for Chrome in your
+      OS settings (macOS: System Settings &rarr; Notifications; Windows: Settings &rarr;
+      Notifications), or TabBell can&rsquo;t ping you.
+    </div>
+
+    <div id="cap-warning" class="warning" hidden>
+      &#9888;&#65039; You have a lot of background watches. Checks are rate-limited and queued,
+      so some may run later than scheduled.
+    </div>
+
+    <section class="watches">
+      <div class="section-head">
+        <h2>Watching</h2>
+        <button id="clear-finished" class="link-btn" hidden>Clear finished</button>
+      </div>
+      <ul id="watch-list"></ul>
+      <div id="empty-state" class="empty">
+        <p>Nothing being watched.</p>
+        <p class="empty-sub">
+          <strong>Snip area</strong> to watch a price, an Apply button, or a pipeline status
+          &mdash; or <strong>Watch this tab</strong> to track its title.
+        </p>
+      </div>
+    </section>
+
+    <details class="settings">
+      <summary>Settings</summary>
+      <div class="settings-body">
+        <label class="row checkbox-row">
+          <input type="checkbox" id="notify-any-change" />
+          <span>Notify on any change (not just success/failure keywords)</span>
+        </label>
+
+        <button id="test-chrome" class="btn btn-ghost">Send test Chrome notification</button>
+        <p id="chrome-status" class="hint"></p>
+
+        <div class="divider"></div>
+
+        <p class="hint">Detection keywords (comma-separated)</p>
+        <label class="field">
+          <span>Success</span>
+          <input type="text" id="kw-success" placeholder="success, passed, done&hellip;" />
+        </label>
+        <label class="field">
+          <span>Failure</span>
+          <input type="text" id="kw-failure" placeholder="failed, error, cancelled&hellip;" />
+        </label>
+        <label class="field">
+          <span>Still running</span>
+          <input type="text" id="kw-running" placeholder="running, pending, building&hellip;" />
+        </label>
+
+        <div class="divider"></div>
+
+        <label class="row checkbox-row">
+          <input type="checkbox" id="telegram-enabled" />
+          <span>Telegram (free &mdash; create a bot with
+            <a href="https://t.me/BotFather" target="_blank" rel="noreferrer">@BotFather</a>)</span>
+        </label>
+        <div id="telegram-fields" class="channel-fields" hidden>
+          <label class="field">
+            <span>Bot token</span>
+            <input type="password" id="telegram-token" placeholder="123456:ABC-DEF&hellip;" />
+          </label>
+          <label class="field">
+            <span>Chat ID (message your bot, then see /getUpdates)</span>
+            <input type="text" id="telegram-chat-id" placeholder="123456789" />
+          </label>
+          <button id="test-telegram" class="btn btn-ghost" data-channel="telegram">Send test</button>
+          <p id="telegram-status" class="hint"></p>
+        </div>
+
+        <label class="row checkbox-row">
+          <input type="checkbox" id="discord-enabled" />
+          <span>Discord webhook (free)</span>
+        </label>
+        <div id="discord-fields" class="channel-fields" hidden>
+          <label class="field">
+            <span>Webhook URL (channel settings &rarr; Integrations)</span>
+            <input type="password" id="discord-webhook" placeholder="https://discord.com/api/webhooks/&hellip;" />
+          </label>
+          <button id="test-discord" class="btn btn-ghost" data-channel="discord">Send test</button>
+          <p id="discord-status" class="hint"></p>
+        </div>
+
+        <label class="row checkbox-row">
+          <input type="checkbox" id="slack-enabled" />
+          <span>Slack webhook (free)</span>
+        </label>
+        <div id="slack-fields" class="channel-fields" hidden>
+          <label class="field">
+            <span>Incoming webhook URL</span>
+            <input type="password" id="slack-webhook" placeholder="https://hooks.slack.com/services/&hellip;" />
+          </label>
+          <button id="test-slack" class="btn btn-ghost" data-channel="slack">Send test</button>
+          <p id="slack-status" class="hint"></p>
+        </div>
+      </div>
+    </details>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
