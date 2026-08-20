@@ -91,6 +91,13 @@ export interface Watch {
   priceHistory?: PricePoint[];
   /** Continuous watches (price/keyword): when we last notified. */
   lastNotifiedAt?: number;
+  /**
+   * Live watches only: some pages never update their own DOM (server-
+   * rendered dashboards with no client-side polling). If set, the tab is
+   * reloaded on this interval so live watches actually see fresh content.
+   */
+  autoRefreshMinutes?: number;
+  lastRefreshedAt?: number;
   createdAt: number;
   completedAt?: number;
 }
@@ -176,6 +183,9 @@ export const HOST_SPACING_MS = 60_000;
 /** Interval presets offered in the config card (minutes). */
 export const INTERVAL_PRESETS = [15, 30, 60, 360, 1440] as const;
 
+/** Auto-refresh presets for live watches on pages that don't self-update. */
+export const AUTO_REFRESH_PRESETS = [1, 2, 5, 10] as const;
+
 // ---- Check specs & snapshots ---------------------------------------------
 
 /** Serializable description of what to look at on a page. */
@@ -223,6 +233,8 @@ export interface CreateWatchConfig {
   condition: Condition;
   mode: WatchMode;
   intervalMinutes: number;
+  /** Live mode only: 0 = never auto-refresh, otherwise minutes between reloads. */
+  autoRefreshMinutes?: number;
   thumb?: string;
 }
 

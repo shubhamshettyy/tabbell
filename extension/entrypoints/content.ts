@@ -3,6 +3,7 @@ import { specForWatch } from '../shared/conditions';
 import { takeSnapshot } from '../shared/snapshot';
 import {
   INTERVAL_PRESETS,
+  AUTO_REFRESH_PRESETS,
   type BackgroundMessage,
   type CheckSpec,
   type Condition,
@@ -532,8 +533,27 @@ export default defineContentScript({
       );
       intervalWrap.append(mkLabel('Check frequency'), intervalSelect);
       card.append(intervalWrap);
+
+      const refreshWrap = document.createElement('div');
+      const refreshSelect = mkSelect(
+        [
+          ['0', 'Never (page updates itself)'],
+          ...AUTO_REFRESH_PRESETS.map((m): [string, string] => [String(m), `Every ${m} min`]),
+        ],
+        '0',
+      );
+      const refreshHint = document.createElement('p');
+      refreshHint.textContent =
+        'If this page never updates on its own (no live status, needs a manual ' +
+        'refresh to show progress), reload it periodically so TabBell can see changes.';
+      refreshHint.style.cssText = 'font-size:11px;color:#8f89ad;margin:2px 0 10px;';
+      refreshWrap.append(mkLabel('Auto-refresh this tab'), refreshSelect, refreshHint);
+      card.append(refreshWrap);
+
       const syncInterval = (): void => {
-        intervalWrap.style.display = modeSelect.value === 'revisit' ? 'block' : 'none';
+        const isRevisit = modeSelect.value === 'revisit';
+        intervalWrap.style.display = isRevisit ? 'block' : 'none';
+        refreshWrap.style.display = isRevisit ? 'none' : 'block';
       };
       modeSelect.addEventListener('change', syncInterval);
       syncInterval();
@@ -577,6 +597,7 @@ export default defineContentScript({
           condition,
           mode: modeSelect.value as WatchMode,
           intervalMinutes: Number(intervalSelect.value),
+          autoRefreshMinutes: Number(refreshSelect.value) || undefined,
           thumb,
         };
         card.remove();

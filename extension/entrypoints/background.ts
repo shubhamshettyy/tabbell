@@ -281,6 +281,10 @@ async function createWatchFromConfig(
     watch.intervalMinutes = config.intervalMinutes;
     watch.nextCheckAt = now + config.intervalMinutes * 60_000;
   }
+  if (config.mode === 'live' && config.autoRefreshMinutes) {
+    watch.autoRefreshMinutes = config.autoRefreshMinutes;
+    watch.lastRefreshedAt = now;
+  }
   if (config.condition.kind === 'priceThreshold' && config.condition.baselinePrice) {
     watch.lastPrice = config.condition.baselinePrice;
     watch.priceHistory = [{ t: now, p: config.condition.baselinePrice }];
@@ -551,6 +555,28 @@ async function focusWatchTab(watchId: string): Promise<void> {
 // ---- Live polling fallback --------------------------------------------------
 
 /**
+ * Some pages never update their own DOM (server-rendered dashboards with
+ * no client-side polling) — a MutationObserver on them will simply never
+ * fire, and the poll below only ever re-reads whatever is already loaded.
+ * If the user opted into auto-refresh, reload the tab here so there is
+ * actually fresh content to check.
+ */
+async function maybeAutoRefresh(watch: Watch): Promise<void> {
+  if (!watch.autoRefreshMinutes || watch.tabId === undefined) return;
+  const due = Date.now() - (watch.lastRefreshedAt ?? 0) >= watch.autoRefreshMinutes * 60_000;
+  if (!due) return;
+  try {
+    await chrome.tabs.reload(watch.tabId);
+    await waitForTabComplete(watch.tabId, TAB_LOAD_TIMEOUT_MS);
+    await sleep(SETTLE_MS);
+  } catch {
+    return; // tab may be mid-navigation or gone; the tab-lost check below covers it
+  }
+  watch.lastRefreshedAt = Date.now();
+  await upsertWatch(watch);
+}
+
+/**
  * Periodic re-check for live watches only. Confirms pending stability
  * windows, catches changes the MutationObserver missed (SW eviction, page
  * re-render), and detects dead tabs. Revisit watches have their own scheduler.
@@ -561,6 +587,7 @@ async function pollLiveWatches(): Promise<void> {
 
   for (const watch of active) {
     if (watch.tabId === undefined) continue;
+    await maybeAutoRefresh(watch);
     if (watch.type === 'title') {
       try {
         const tab = await chrome.tabs.get(watch.tabId);
@@ -632,17 +659,27 @@ async function runRevisitCheck(watch: Watch): Promise<void> {
   watch.nextCheckAt = Date.now() + Math.round(interval * jitter);
   await upsertWatch(watch);
 
-  // If the page happens to be open in some tab, check it there — free.
+  // If the page happens to be open in some tab, reuse that tab instead of
+  // opening a new one — but it must be reloaded first. Reading its DOM
+  // as-is would miss any change that requires a fresh load to surface
+  // (e.g. server-rendered dashboards that don't self-update).
   const openTab = await findOpenTab(watch.url);
   if (openTab?.id !== undefined) {
-    const snapshot = (await messageTab(
-      openTab.id,
-      { kind: 'run-check', spec: specForWatch(watch) },
-      true,
-    )) as Snapshot | undefined;
-    if (snapshot) {
-      await handleSnapshot(watch.id, snapshot);
-      return;
+    try {
+      await chrome.tabs.reload(openTab.id);
+      await waitForTabComplete(openTab.id, TAB_LOAD_TIMEOUT_MS);
+      await sleep(SETTLE_MS);
+      const snapshot = (await messageTab(
+        openTab.id,
+        { kind: 'run-check', spec: specForWatch(watch) },
+        true,
+      )) as Snapshot | undefined;
+      if (snapshot) {
+        await handleSnapshot(watch.id, snapshot);
+        return;
+      }
+    } catch {
+      /* tab may have been closed mid-reload — fall through to fetch/tab-open */
     }
   }
 
